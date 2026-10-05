@@ -9,13 +9,51 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function Register() {
-  const { register, loading } = useAuth();
-  const navigate = useNavigate();
+const { register, loading } = useAuth();  const navigate = useNavigate();
   const { toast } = useToast();
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
   const [error, setError] = useState("");
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+const handleGoogleRegister = async (credential) => {
+  try {
+    setError("");
+
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/auth/google/register-info`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          credential,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Google registration failed");
+    }
+
+    setForm((f) => ({
+      ...f,
+      name: data.name || "",
+      email: data.email || "",
+    }));
+
+    toast({
+      title: "Google account connected",
+      description: "Now create a password to finish your Habitly account.",
+    });
+  } catch (err) {
+    setError(err.message);
+  }
+};
+
 
   const submit = async (e) => {
     e.preventDefault();
@@ -33,7 +71,11 @@ export default function Register() {
 
   return (
     <AuthShell title="Create your account" subtitle="Start building better habits today">
-      <SocialButtons label="Sign up with" />
+      <SocialButtons
+  label="Sign up with"
+  mode="register"
+  onGoogleRegister={handleGoogleRegister}
+/>
 
       <div className="my-5 flex items-center gap-3 text-xs text-ink-500">
         <div className="h-px flex-1 bg-ink-700" />

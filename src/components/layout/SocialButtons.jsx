@@ -1,3 +1,6 @@
+import { useGoogleLogin } from "@react-oauth/google";
+import { useAuth } from "../../context/AuthContext";
+
 function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24">
@@ -24,29 +27,55 @@ function GoogleIcon() {
 function AppleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.34-3.14-2.58-1.71-2.48-3.02-7.01-1.26-10.02a4.9 4.9 0 0 1 4.13-2.51c1.29-.02 2.51.87 3.28.87.78 0 2.25-1.08 3.8-.92.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.27-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.02.07-.42 1.44-1.37 2.83ZM15.5 5.06c.71-.86 1.18-2.07 1.05-3.27-1.02.04-2.25.68-2.98 1.54-.65.75-1.22 1.96-1.07 3.13 1.14.09 2.29-.58 3-1.4Z" />
+      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.34-3.14-2.58-1.71-2.48-3.02-7.01-1.26-10.02a4.9 4.9 0 0 1 4.13-2.51c1.29-.02 2.51.87 3.28.87.78 0 2.25-1.08 3.8-.92.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.27-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.02.07-.42 1.44-1.37 2.83ZM15.5 5.06c.71-.86 1.18-2.07 1.05-3.27-.65.75-1.22 1.96-1.07 3.13 1.14.09 2.29-.58 3-1.4Z" />
     </svg>
   );
 }
 
-export default function SocialButtons({ label = "Continue with" }) {
+export default function SocialButtons({ 
+  label = "Continue with", 
+  mode = "login", 
+  onGoogleRegister,
+  onGoogleSuccess,
+}) {
+const { loginWithProvider } = useAuth();
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        if (mode === "register") {
+          await onGoogleRegister(tokenResponse.access_token);
+        } else {
+        await loginWithProvider("google", tokenResponse.access_token);
+
+if (onGoogleSuccess) {
+  onGoogleSuccess();
+}       }
+      } catch (error) {
+        console.error("Google authentication failed:", error);
+        window.alert(error.message || "Google authentication failed");
+      }
+    },
+
+    onError: () => {
+      window.alert("Google authentication failed");
+    },
+  });
+
   const handleComingSoon = () => {
     window.alert("Coming soon!");
   };
 
   return (
     <div className="space-y-2.5">
-      {/* Google */}
       <button
         type="button"
-        onClick={handleComingSoon}
+        onClick={() => googleLogin()}
         className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-black/5"
       >
         <GoogleIcon />
         {label} Google
       </button>
 
-      {/* Apple */}
       <button
         type="button"
         onClick={handleComingSoon}

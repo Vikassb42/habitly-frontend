@@ -67,26 +67,30 @@ export const AppAuthProvider = ({ children }) => {
     }
   }, []);
 
-  const loginWithProvider = useCallback(
-    (provider) => {
+const loginWithProvider = useCallback(
+  async (provider, credential) => {
+    setLoading(true);
+
+    try {
       if (provider === "apple") {
         throw new Error("Apple sign-in is not available yet.");
       }
 
-      // Google demo flow is kept for now.
-      const u = {
-        id: `${provider}_${Date.now()}`,
-        name: "Google User",
-        email: "guest@google.com",
-        provider,
-        createdAt: new Date().toISOString(),
-      };
+      if (provider === "google") {
+        const response = await authApi.googleLogin(credential);
 
-      persist(u);
-      return u;
-    },
-    [persist]
-  );
+        persist(response);
+
+        return response;
+      }
+
+      throw new Error("Unsupported login provider.");
+    } finally {
+      setLoading(false);
+    }
+  },
+  [persist]
+);
 
   const logout = useCallback(() => {
     // Remove the current user's authentication data.

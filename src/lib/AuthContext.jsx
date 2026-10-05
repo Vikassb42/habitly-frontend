@@ -77,22 +77,23 @@ export const AppAuthProvider = ({ children }) => {
   );
 
   // Google login
-  const loginWithGoogle = useCallback(
-    async (email) => {
-      setLoading(true);
+// Google login
+const loginWithProvider = useCallback(
+  async (provider, credential) => {
+    setLoading(true);
 
-      try {
-        const response = await authApi.googleLogin(email);
+    try {
+      const response = await authApi[`${provider}Login`](credential);
 
-        persist(response);
+      persist(response);
 
-        return response;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [persist]
-  );
+      return response;
+    } finally {
+      setLoading(false);
+    }
+  },
+  [persist]
+);
 
   const logout = useCallback(() => {
     localStorage.removeItem("ht_token");
@@ -120,7 +121,7 @@ export const AppAuthProvider = ({ children }) => {
         loading,
         login,
         register,
-        loginWithGoogle,
+        loginWithProvider,
         logout,
         updateProfile,
       }}

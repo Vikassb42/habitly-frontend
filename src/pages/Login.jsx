@@ -33,7 +33,10 @@ export default function Login() {
 
   return (
     <AuthShell title="Welcome to Habitly" subtitle="Your journey to better habits starts here">
-      <SocialButtons label="Sign in with" />
+      <SocialButtons
+  label="Sign in with"
+  onGoogleSuccess={() => navigate(from, { replace: true })}
+/>
 
       <div className="my-5 flex items-center gap-3 text-xs text-ink-500">
         <div className="h-px flex-1 bg-ink-700" />

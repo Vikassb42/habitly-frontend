@@ -87,13 +87,57 @@ export default function Profile() {
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
 
-  const [notifications, setNotifications] = useState(true);
+  const [notifications, setNotifications] = useState(() => {
+  const saved = localStorage.getItem("ht_notifications");
+  return saved !== null ? saved === "true" : true;
+});
+
+
+const handleNotificationsChange = async (enabled) => {
+  if (enabled) {
+    if (!("Notification" in window)) {
+      toast({
+        title: "Notifications not supported",
+        description:
+          "Your browser does not support notifications.",
+      });
+
+      return;
+    }
+
+    if (Notification.permission === "denied") {
+      toast({
+        title: "Notifications blocked",
+        description:
+          "Please allow notifications in your browser settings.",
+      });
+
+      return;
+    }
+
+    if (Notification.permission === "default") {
+      const permission =
+        await Notification.requestPermission();
+
+      if (permission !== "granted") {
+        return;
+      }
+    }
+  }
+
+  setNotifications(enabled);
+
+  localStorage.setItem(
+    "ht_notifications",
+    String(enabled)
+  );
+};
 
   const [weekStart, setWeekStart] = useState("Sunday");
 
   // Dark theme state
   const [darkTheme, setDarkTheme] = useState(() => {
-    return localStorage.getItem("ht_theme") !== "light";
+  return localStorage.getItem("ht_theme") === "dark";
   });
 
   // Apply theme whenever darkTheme changes
@@ -243,9 +287,9 @@ export default function Profile() {
           desc="Daily reminders to keep your streaks alive"
         >
           <Switch
-            checked={notifications}
-            onCheckedChange={setNotifications}
-          />
+  checked={notifications}
+  onCheckedChange={handleNotificationsChange}
+/>
         </Row>
 
         {/* Dark Theme */}

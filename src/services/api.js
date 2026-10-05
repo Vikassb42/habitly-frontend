@@ -136,31 +136,53 @@ export const authApi = {
   },
 
   // GOOGLE LOGIN
-  async googleLogin(email) {
-    const res = await fetch(`${API_BASE_URL}/auth/google`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email,
-      }),
-    });
 
-    const data = await res.json();
+  async googleRegisterInfo(credential) {
+  const res = await fetch(`${API_BASE_URL}/auth/google/register-info`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      credential,
+    }),
+  });
 
-    if (!res.ok) {
-      throw new Error(data.message || "Google login failed");
-    }
+  const data = await res.json();
 
-    localStorage.setItem("ht_token", data.token);
+  if (!res.ok) {
+    throw new Error(data.message || "Google registration failed");
+  }
 
-    return {
-      id: data.user.id,
-      name: data.user.name || data.user.username,
-      email: data.user.email,
-    };
-  },
+  return data;
+},
+
+  // GOOGLE LOGIN
+async googleLogin(credential) {
+  const res = await fetch(`${API_BASE_URL}/auth/google`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      credential,
+    }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Google login failed");
+  }
+
+  localStorage.setItem("ht_token", data.token);
+
+  return {
+    id: data.user.id,
+    name: data.user.name || data.user.username,
+    email: data.user.email,
+  };
+},
 };
 
 // ---------------------------------------------------------------------------
@@ -428,5 +450,43 @@ export const habitsApi = {
     }
 
     return data.history || {};
+  },
+};
+
+// ---------------------------------------------------------------------------
+// REMINDERS
+// ---------------------------------------------------------------------------
+
+export const reminderApi = {
+  // GET REMINDERS
+  async get() {
+    const res = await fetch(`${API_BASE_URL}/reminders`, {
+      headers: authHeaders(),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Could not load reminders");
+    }
+
+    return data.reminders;
+  },
+
+  // SAVE REMINDERS
+  async save(reminders) {
+    const res = await fetch(`${API_BASE_URL}/reminders`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify(reminders),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Could not save reminders");
+    }
+
+    return data.reminders;
   },
 };
